@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Imbas QR Latihan</title>
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f6f8;
+  text-align: center;
+  padding: 20px;
+}
+select {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  font-size: 16px;
+}
+#reader {
+  width: 100%;
+  max-width: 350px;
+  margin: auto;
+}
+#status {
+  margin-top: 15px;
+  font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<h2>📷 Imbas QR Penghantaran Latihan</h2>
+
+<select id="latihan">
+  <option value="">-- Pilih Latihan --</option>
+  <option value="Latihan 1">Latihan 1</option>
+  <option value="Latihan 2">Latihan 2</option>
+  <option value="Kerja Rumah">Kerja Rumah</option>
+</select>
+
+<div id="reader"></div>
+<div id="status"></div>
+
+<script>
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw9Jj9BpySlKcWdP1_azOiX9gjZAboMLkUQKo5HJzVkmyp3TNWfN62fRc-qF0UhXsfiKA/exec";
+let lastScan = "";
+
+function onScanSuccess(text) {
+  if (text === lastScan) return;
+  lastScan = text;
+
+  const latihan = document.getElementById("latihan").value;
+  if (!latihan) {
+    alert("Sila pilih latihan dahulu");
+    return;
+  }
+
+  document.getElementById("status").innerText = "⏳ Menyimpan...";
+
+  fetch(WEB_APP_URL, {
+    method: "POST",
+    body: JSON.stringify({ id: text, latihan: latihan })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === "success")
+      status.innerText = "✅ Rekod berjaya disimpan";
+    else if (data.status === "duplicate")
+      status.innerText = "⚠️ Sudah direkod sebelum ini";
+    else
+      status.innerText = "❌ ID tidak dijumpai";
+  })
+  .catch(() => status.innerText = "❌ Ralat sambungan");
+}
+
+new Html5Qrcode("reader").start(
+  { facingMode: "environment" },
+  { fps: 10, qrbox: 250 },
+  onScanSuccess
+);
+</script>
+
+</body>
+</html>
